@@ -1,0 +1,165 @@
+<PRD>
+
+ExamBotAssessments Product Requirements Document
+1. Introduction
+This Product Requirements Document (PRD) outlines the features, functionalities, and technical specifications for ExamBotAssessments, an intelligent assessment application. The primary purpose of this document is to serve as a comprehensive guide for the development team, stakeholders, and quality assurance, ensuring a shared understanding of the product's scope, objectives, and requirements. ExamBotAssessments aims to automate and enhance the student answer assessment process through a multi-agent system, leveraging Large Language Models (LLMs) and a robust knowledge base.
+
+2. Product overview
+ExamBotAssessments is designed to streamline the evaluation of student answers by ingesting educational content and student submissions, then intelligently assessing them using a series of specialized AI agents. The application will build a local knowledge base from provided PDF and TXT files, process student answers from CSV files, and orchestrate a sophisticated workflow involving a Supervisor, RAG (Retrieval-Augmented Generation), Assessor, and LLMAsAJudge agent. The system will provide a score and detailed feedback for each student answer, with robust error handling and monitoring capabilities.
+
+3. Goals and objectives
+The overarching goal of ExamBotAssessments is to provide an efficient, accurate, and scalable solution for automated student answer assessment.
+
+Objective 3.1: Automate assessment workflow: To fully automate the process of evaluating student answers from ingestion to final assessment, reducing manual effort and improving efficiency.
+Objective 3.2: Enhance assessment accuracy: To leverage advanced AI models and a curated knowledge base to ensure high accuracy and consistency in scoring and feedback.
+Objective 3.3: Provide detailed feedback: To generate comprehensive and actionable feedback for students, identifying areas for improvement.
+Objective 3.4: Ensure system reliability: To build a robust and resilient multi-agent system with effective error handling and retry mechanisms.
+Objective 3.5: Facilitate monitoring and debugging: To implement comprehensive logging and monitoring to enable easy tracking of agent interactions and system performance.
+4. Target audience
+The primary target audience for ExamBotAssessments includes:
+
+Educational institutions: Universities, colleges, and schools looking to automate and scale their assessment processes.
+Educators and instructors: Teachers who need assistance in grading assignments and providing consistent feedback to a large number of students.
+Learning platform administrators: Individuals managing online learning platforms who can integrate this system for automated grading functionalities.
+Assessment designers: Professionals involved in creating and delivering standardized tests and evaluations.
+5. Features and requirements
+This section details the functional requirements for ExamBotAssessments, categorized by their respective areas.
+
+5.1. Data ingestion and knowledge base creation
+FR1.1: Knowledge base ingestion: The application shall ingest PDF and TXT files from the /custom_data folder to construct a comprehensive knowledge base.
+FR1.2: Automatic knowledge base creation: The knowledge base creation process shall be initiated automatically upon application startup.
+FR1.3: Local vector database utilization: The application shall utilize a local, free vector database (e.g., ChromaDB, FAISS) for efficient storage and querying of the knowledge base.
+5.2. Answer processing and assessment workflow
+FR2.1: Student answer ingestion: The application shall read student answers from CSV files located in the /answers folder.
+FR2.2: Unit assessment processing: Each row in the CSV file, representing a student_id, question, and answer, shall be processed as a separate assessment unit.
+FR2.3: Assessment workflow sequence: The assessment workflow for each answer shall strictly follow the sequence: Supervisor → RAG → Supervisor → Assessor → Supervisor → LLMAsAJudge → Supervisor.
+5.3. Agent-specific functionality
+5.3.1. Supervisor agent
+FR3.1.1: Assessment process orchestrator: The Supervisor shall serve as the primary entry point and final orchestrator of the entire assessment process.
+FR3.1.2: Post-agent invocation: The Supervisor shall be invoked after the completion of execution of every other agent in the workflow.
+FR3.1.3: Access to agent results: The Supervisor shall have complete access to the results and outputs of all other agents.
+FR3.1.4: Agent re-call on failure: If any agent returns an empty or failed result, the Supervisor shall re-call that specific agent up to a maximum of three times.
+FR3.1.5: Dynamic agent sequencing: The Supervisor shall dynamically determine the next agent to be called based on the defined assessment workflow and the results of the preceding agents.
+FR3.1.6: Assessor re-call on "not good enough" result: If the LLMAsAJudge agent returns false (indicating a "not good enough" result), the Supervisor shall re-call the preceding Assessor agent up to a maximum of three times.
+5.3.2. RAG agent
+FR3.2.1: Context retrieval: The RAG agent shall be responsible for retrieving relevant context from the knowledge base based on the question provided to the student.
+5.3.3. Assessor agent
+FR3.3.1: Input reception: The Assessor agent shall receive the question, context (from RAG), and student_answer as inputs.
+FR3.3.2: Score output: The Assessor agent shall output an integer score between 0 and 10 (inclusive) representing the assessment of the student answer.
+FR3.3.3: Feedback generation: The Assessor agent shall output a feedback string that explains the assigned score, identifies incorrect aspects of the student's answer, and suggests improvements.
+5.3.4. LLMAsAJudge agent
+FR3.4.1: Input reception: The LLMAsAJudge agent shall receive the question, context (from RAG), student_answer, and score (from Assessor) as inputs.
+FR3.4.2: Reasonableness validation: The LLMAsAJudge agent shall output a boolean value (true/false) indicating whether the provided score and feedback are reasonable and fair.
+5.4. LLM and API integration
+FR4.1: Exclusive OpenAI API usage: The application shall exclusively use the OpenAI API for all Large Language Model (LLM) interactions.
+FR4.2: Secure API key loading: OpenAI API keys shall be securely loaded from an .env file to ensure confidentiality and security.
+5.5. Monitoring and logging
+FR5.1: Langsmith integration for monitoring: All agent interactions, including their inputs and outputs, shall be logged and monitored using Langsmith for comprehensive traceability and debugging.
+FR5.2: Secure Langsmith API key loading: Langsmith API keys shall be securely loaded from an .env file.
+6. User stories and acceptance criteria
+This section outlines key user stories that define the interactions with ExamBotAssessments, along with their acceptance criteria to ensure testable and verifiable implementations.
+
+ST-101: Secure access to application.
+User Story: As a system administrator, I want to securely load API keys from an .env file so that sensitive information is protected and not hardcoded.
+Acceptance Criteria:
+GIVEN the application starts up
+WHEN API keys are required for OpenAI and Langsmith
+THEN the application shall successfully load these keys from a .env file.
+AND the application shall not proceed if required API keys are missing or invalid.
+ST-102: Knowledge base creation from custom data.
+User Story: As a content manager, I want the application to automatically ingest PDF and TXT files from a specified folder at startup to build a comprehensive knowledge base, so that the assessment agents have relevant context.
+Acceptance Criteria:
+GIVEN PDF and TXT files are present in the /custom_data folder
+WHEN the application starts up
+THEN the application shall automatically initiate the knowledge base creation process.
+AND a local vector database shall be populated with the ingested data.
+AND the knowledge base shall be queryable by the RAG agent.
+ST-103: Processing of student answers.
+User Story: As an educator, I want the application to read student answers from CSV files in the /answers folder and process each answer individually, so that assessments can be performed at scale.
+Acceptance Criteria:
+GIVEN CSV files containing student_id, question, and answer are in the /answers folder
+WHEN the assessment process is initiated
+THEN each row in the CSV shall be identified and processed as a unique assessment unit.
+AND the data for each assessment unit shall be correctly parsed.
+ST-104: Orchestration of assessment workflow.
+User Story: As a system, I want the Supervisor agent to orchestrate the assessment workflow (Supervisor → RAG → Supervisor → Assessor → Supervisor → LLMAsAJudge → Supervisor) for each answer, so that assessments are conducted systematically.
+Acceptance Criteria:
+GIVEN an assessment unit is ready for processing
+WHEN the Supervisor initiates the workflow
+THEN the RAG agent shall be called, followed by Supervisor, then Assessor, then Supervisor, then LLMAsAJudge, and finally Supervisor.
+AND each agent shall receive the correct inputs from preceding agents.
+ST-105: RAG agent context retrieval.
+User Story: As an RAG agent, I want to retrieve relevant context from the knowledge base based on the student's question, so that the Assessor has sufficient information to grade.
+Acceptance Criteria:
+GIVEN a question is provided to the RAG agent
+WHEN the RAG agent executes
+THEN relevant context from the knowledge base shall be retrieved.
+AND this context shall be provided as an output to the Supervisor.
+ST-106: Assessor agent score and feedback generation.
+User Story: As an Assessor agent, I want to generate an integer score (0-10) and a feedback string for each student answer, so that students receive clear evaluation and guidance.
+Acceptance Criteria:
+GIVEN question, context, and student_answer are provided to the Assessor agent
+WHEN the Assessor agent executes
+THEN it shall output an integer score between 0 and 10 (inclusive).
+AND it shall output a feedback string explaining the score, identifying incorrect aspects, and suggesting improvements.
+ST-107: LLMAsAJudge validation of assessment.
+User Story: As an LLMAsAJudge agent, I want to validate if the Assessor's score and feedback are reasonable, so that the overall assessment quality is maintained.
+Acceptance Criteria:
+GIVEN question, context, student_answer, and score are provided to the LLMAsAJudge agent
+WHEN the LLMAsAJudge agent executes
+THEN it shall output a boolean value (true/false) indicating the reasonableness of the score and feedback.
+ST-108: Supervisor agent re-calling on agent failure.
+User Story: As a Supervisor agent, I want to re-call a failing or empty-result agent up to three times, so that the assessment workflow can recover from transient errors.
+Acceptance Criteria:
+GIVEN an agent returns an empty or failed result
+WHEN the Supervisor is invoked
+THEN the Supervisor shall re-call that agent.
+AND this re-call shall occur a maximum of three times for the same failure.
+ST-109: Supervisor agent re-calling Assessor on "not good enough" judgment.
+User Story: As a Supervisor agent, I want to re-call the Assessor agent up to three times if the LLMAsAJudge deems the result "not good enough," so that the assessment can be refined.
+Acceptance Criteria:
+GIVEN the LLMAsAJudge agent returns false
+WHEN the Supervisor is invoked
+THEN the Supervisor shall re-call the Assessor agent.
+AND this re-call shall occur a maximum of three times for the same "not good enough" judgment.
+ST-110: Comprehensive logging and monitoring.
+User Story: As a developer, I want all agent interactions, inputs, and outputs to be logged and monitored using Langsmith, so that I can easily debug, trace, and optimize the multi-agent system.
+Acceptance Criteria:
+GIVEN any agent performs an action (receives input, produces output)
+WHEN the action occurs
+THEN relevant data (inputs, outputs, agent ID, timestamp) shall be sent to Langsmith.
+AND these logs shall be accessible and viewable in the Langsmith interface.
+ST-111: Database model for assessment data persistence.
+User Story: As a system, I want to store the results of each assessment (student ID, question, answer, score, feedback, and audit trail of agent interactions) in a persistent database, so that assessment records are maintained and retrievable for analysis and reporting.
+Acceptance Criteria:
+GIVEN an assessment unit has completed its workflow
+WHEN the final Supervisor step is reached
+THEN the system shall store the student_id, question, answer, final score, final feedback, and a record of all agent interactions (inputs, outputs, and status for each agent) in a local, persistent database.
+AND the stored data shall be easily retrievable by student_id and question.
+7. Technical requirements / stack
+This section outlines the core technical specifications and architectural choices for ExamBotAssessments.
+
+FR6.1: Programming language: The application shall be developed exclusively using Python 3.13.
+FR6.2: Package manager: The uv package manager shall be used for all dependency management instead of pip.
+FR6.3: Multi-agent orchestration: The LangGraph library shall be used for orchestrating the multi-agent system and defining agent workflows.
+FR6.4: Development best practices: The project shall adhere to best practices for multi-agent system development, including:
+Modularity: Clear separation of concerns and agent responsibilities.
+Clear agent responsibilities: Each agent should have a well-defined and singular purpose.
+Robust error handling: Comprehensive mechanisms for catching, logging, and recovering from errors.
+FR6.5: Folder structure: The project shall implement an appropriate and logical folder structure suitable for a multi-agent system, ensuring maintainability and scalability. This includes dedicated directories for agents, data, configurations, and utilities.
+8. Design and user interface
+ExamBotAssessments is primarily a backend-driven application with no direct graphical user interface (GUI) for end-users. Its interaction will be through file system operations (placing files in /custom_data and /answers) and configuration via an .env file.
+
+8.1. Interaction model
+Input: Users will provide input by placing PDF and TXT files into the /custom_data folder for knowledge base creation, and CSV files into the /answers folder for student answer assessment.
+Output: The primary output will be the processed student assessments, including scores and feedback, which will be stored persistently (as per ST-111) and potentially outputted to a results directory or a logging interface (Langsmith).
+Configuration: All critical configurations, including API keys, will be managed via the .env file.
+8.2. Monitoring and observability
+Langsmith dashboard: The primary "user interface" for monitoring the system's operation, agent interactions, and debugging will be the Langsmith dashboard. This will provide a visual representation of agent traces, inputs, outputs, and any errors.
+8.3. Future considerations (out of scope for initial release)
+While not part of the initial scope, future enhancements may include:
+
+A web-based interface for uploading files and viewing assessment results.
+API endpoints for programmatic integration with other learning management systems.
+Customizable assessment rubrics and agent configurations through a user interface.
+</PRD>

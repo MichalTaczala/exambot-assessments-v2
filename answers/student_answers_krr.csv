@@ -1,0 +1,21 @@
+student_id,question,answer
+1000,What is the main goal of Reasoning about Actions (RAC)?,To describe the world accurately at every moment without needing action effects.
+1001,What is a dynamic system in RAC?,"It is a system where only properties of objects are stored, but no actions."
+1002,What is the Frame Problem in RAC?,"It refers to tracking all changes made by actions, including indirect ones."
+1003,What is the Ramification Problem?,It concerns checking preconditions before executing any action.
+1004,What does the Qualification Problem deal with?,It ensures all consequences of actions are listed explicitly.
+1005,What is an indirect effect in RAC?,An effect that occurs before the main action completes.
+1006,What are examples of applications of RAC?,It is mostly used in databases to optimize queries.
+1007,What is a deterministic effect of an action?,It means the action does not produce any effect at all.
+1008,What is a non-deterministic effect?,An effect that happens only if we have the correct initial state.
+1009,What happens if preconditions of an action do not hold?,The action is reversed and system state is reset.
+1010,What is the purpose of the theoretical part in lab projects?,To test the application for bugs and inconsistencies.
+1011,What does the testing part of a project include?,It contains only documentation of how the app was built.
+1012,How many checkpoints are there in the course?,"There are two checkpoints in total, both in May."
+1013,What does the application part of a project consist of?,Only writing the user guide and creating slides.
+1014,How are delays penalized in lab work?,By disqualifying the whole team after 1 week.
+1015,What is the total number of points available for the test?,Up to 30 points depending on participation.
+1016,What is the format of the test?,An oral interview with open-ended questions.
+1017,What kind of actions can have delayed effects?,Only actions in mechanical systems.
+1018,What is the resolution principle used in?,In designing user interfaces for knowledge bases.
+1019,Who evaluates the contribution of team members?,Only the team leader assigns final grades.

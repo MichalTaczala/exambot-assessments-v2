@@ -1,0 +1,40 @@
+I would like to create concise functional requirements for the following application:
+
+The app is called ExamBotAssessments and is a multi agent assessing exam tool.
+
+My Requirements:
+- We have a folder /custom_data where are .pdf and .txt files with the data. We want to create a knowledge base from this data.
+- We have a folder /answers where are .csv files with the answers. The columns are:
+    - student_id
+    - question
+    - answer
+- Having csv with answers, we want to treat each answer separately, and pass it to the Agents for assessment.
+- We want to have a vector DB that is free and works locally. The exact choice is yours.
+- We want to use only OPENAI API for llms. I dont have keys for other providers.
+- The program should have such agents: [Supervisor, RAG, Asessor, LLMAsAJudge]
+- Supervisor:
+    - It should be called at the beginning and after each agent
+    - The whole program should end after the supervisor.
+    - Supervisor must be called after each agent.
+    - If some other agent returns empty result or fails, the supervisor should call the same agent again, but up to 3 times.
+    - Supervisor has the access to all agents and their results.
+    - Supervisor chooses what agent to call next.
+    - If the result is not good enough, the supervisor should call the same agent again, but up to 3 times.
+- RAG agent:
+    - It should be able to retrieve data from the knowledge base based on the Question that student got.
+- Assessor agent:
+    - It takes the question, context from the RAG agent, and the answer from the student.
+    - It outputs the score(integer from 0 to 10) and the feedback(string telling the user why he got this score, what was incorrect, and what he should do better).
+- LLMAsAJudge agent:
+    - It takes the question, context from the RAG agent, the answer from the student, and the score from the Assessor agent.
+    - It output the true/false answer telling, if the score and the feedback is reasonable. If not then Supervisor should call the Assessor agent again.
+- The ideal flow is as follows: Supervisor → RAG → Supervisor → Assessor → Supervisor → LLMAsAJudge → Supervisor
+- All answers and results should be saved in langsmith.
+- Use python 3.13
+- Use uv package manager instead of pip.
+- Use langgraph.
+- use langsmith for monitoring.
+- Follow the best practices for developing a multi agent system.
+- Use appropriate folder structure for such project.
+- I will provide you the .env file with the OPENAI API key, and the langsmith keys.
+Output as markdown code.

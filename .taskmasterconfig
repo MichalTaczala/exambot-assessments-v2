@@ -1,0 +1,32 @@
+{
+  "models": {
+    "main": {
+      "provider": "openai",
+      "modelId": "gpt-4.1-nano",
+      "maxTokens": 32600,
+      "temperature": 0.2
+    },
+    "research": {
+      "provider": "openai",
+      "modelId": "gpt-4.1",
+      "maxTokens": 32600,
+      "temperature": 0.1
+    },
+    "fallback": {
+      "provider": "openai",
+      "modelId": "gpt-4.1-mini",
+      "maxTokens": 32600,
+      "temperature": 0.1
+    }
+  },
+  "global": {
+    "logLevel": "info",
+    "debug": false,
+    "defaultSubtasks": 5,
+    "defaultPriority": "medium",
+    "projectName": "Taskmaster",
+    "ollamaBaseUrl": "http://localhost:11434/api",
+    "azureOpenaiBaseUrl": "https://your-endpoint.openai.azure.com/",
+    "userId": "1234567890"
+  }
+}

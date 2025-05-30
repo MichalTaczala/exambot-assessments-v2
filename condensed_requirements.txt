@@ -1,0 +1,53 @@
+## ExamBotAssessments: Functional Requirements
+
+**1. Data Ingestion & Knowledge Base Creation:**
+
+* **FR1.1:** The application shall ingest PDF and TXT files from the `/custom_data` folder to construct a knowledge base.
+* **FR1.2:** The knowledge base creation process shall be initiated upon application startup.
+* **FR1.3:** The application shall utilize a local, free vector database for storing and querying the knowledge base. (e.g., ChromaDB, FAISS).
+
+**2. Answer Processing & Assessment Workflow:**
+
+* **FR2.1:** The application shall read student answers from CSV files located in the `/answers` folder.
+* **FR2.2:** Each row in the CSV (representing a `student_id`, `question`, and `answer`) shall be processed as a separate assessment unit.
+* **FR2.3:** The assessment workflow for each answer shall follow the sequence: `Supervisor` → `RAG` → `Supervisor` → `Assessor` → `Supervisor` → `LLMAsAJudge` → `Supervisor`.
+
+**3. Agent-Specific Functionality:**
+
+* **3.1. Supervisor Agent:**
+    * **FR3.1.1:** The Supervisor shall be the entry point of the assessment process and the final orchestrator.
+    * **FR3.1.2:** The Supervisor shall be invoked after the execution of every other agent.
+    * **FR3.1.3:** The Supervisor shall have access to the results of all other agents.
+    * **FR3.1.4:** If an agent returns an empty or failed result, the Supervisor shall re-call that agent up to a maximum of three times.
+    * **FR3.1.5:** The Supervisor shall determine the next agent to be called based on the assessment workflow and agent results.
+    * **FR3.1.6:** If an agent's result is deemed "not good enough" (e.g., LLMAsAJudge returns `false`), the Supervisor shall re-call the preceding agent (Assessor) up to a maximum of three times.
+
+* **3.2. RAG Agent:**
+    * **FR3.2.1:** The RAG agent shall retrieve relevant context from the knowledge base based on the `question` provided to the student.
+
+* **3.3. Assessor Agent:**
+    * **FR3.3.1:** The Assessor agent shall receive the `question`, `context` (from RAG), and `student_answer`.
+    * **FR3.3.2:** The Assessor agent shall output an integer `score` between 0 and 10 (inclusive).
+    * **FR3.3.3:** The Assessor agent shall output a `feedback` string explaining the score, identifying incorrect aspects, and suggesting improvements.
+
+* **3.4. LLMAsAJudge Agent:**
+    * **FR3.4.1:** The LLMAsAJudge agent shall receive the `question`, `context` (from RAG), `student_answer`, and `score` (from Assessor).
+    * **FR3.4.2:** The LLMAsAJudge agent shall output a boolean value (`true`/`false`) indicating whether the provided `score` and `feedback` are reasonable.
+
+**4. LLM & API Integration:**
+
+* **FR4.1:** The application shall exclusively use the OpenAI API for all Large Language Model (LLM) interactions.
+* **FR4.2:** OpenAI API keys shall be securely loaded from an `.env` file.
+
+**5. Monitoring & Logging:**
+
+* **FR5.1:** All agent interactions, inputs, and outputs shall be logged and monitored using Langsmith.
+* **FR5.2:** Langsmith API keys shall be securely loaded from an `.env` file.
+
+**6. Technical Requirements:**
+
+* **FR6.1:** The application shall be developed using Python 3.13.
+* **FR6.2:** The `uv` package manager shall be used for dependency management instead of `pip`.
+* **FR6.3:** The LangGraph library shall be used for orchestrating the multi-agent system.
+* **FR6.4:** The project shall adhere to best practices for multi-agent system development, including modularity, clear agent responsibilities, and robust error handling.
+* **FR6.5:** The project shall implement an appropriate folder structure for a multi-agent system.
