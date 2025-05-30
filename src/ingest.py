@@ -5,11 +5,11 @@ from chromadb.utils import embedding_functions
 import requests
 from dotenv import load_dotenv
 
-CUSTOM_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'custom_data')
+CUSTOM_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'knowledge_base')
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-PERSIST_DIR = os.path.abspath("chroma_db")
+PERSIST_DIR = os.path.abspath("data/chroma_db")
 
 
 def extract_text_from_pdf(pdf_path):
@@ -45,7 +45,7 @@ def get_openai_embedding(text):
     return response.json()['data'][0]['embedding']
 
 
-def ingest():
+def embed_knowledge_base():
     print(f"[DEBUG] ChromaDB persist directory: {PERSIST_DIR}")
     client = chromadb.PersistentClient(path=PERSIST_DIR)
     if "docs" in [c.name for c in client.list_collections()]:
@@ -103,4 +103,4 @@ def test_chromadb_query(collection):
 
 
 if __name__ == "__main__":
-    ingest()
+    embed_knowledge_base()

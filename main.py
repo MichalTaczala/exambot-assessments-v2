@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
-from src.ingest import ingest
+from src.batch_assess import main as batch_assess
+from src.ingest import embed_knowledge_base
 
 
 def main():
@@ -18,9 +19,10 @@ def main():
         exit(1)
     print("All required environment variables loaded.")
     print("Starting knowledge base ingestion...")
-    ingest()
+    # ingest()
     print("Knowledge base ingestion complete. Ready for further processing.")
     print("Hello from exambot-assessments-v2!")
+    batch_assess()
 
 
 if __name__ == "__main__":

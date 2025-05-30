@@ -1,7 +1,20 @@
-from langgraph.graph import StateGraph, START, END
+import operator
+import random
+import time
 from typing import List, Annotated, Literal
 from dataclasses import dataclass, field
-import operator
+from langgraph.graph import StateGraph, START, END
+
+try:
+    from agents.rag_agent import RAGAgent
+    from agents.assessor_agent import AssessorAgent
+    from agents.judge_agent import LLMAsAJudgeAgent
+    from src.agent_call_manager import AgentCallManager
+except ModuleNotFoundError:
+    from agents.rag_agent import RAGAgent
+    from agents.assessor_agent import AssessorAgent
+    from agents.judge_agent import LLMAsAJudgeAgent
+    from agent_call_manager import AgentCallManager
 
 # Define the minimal state schema
 
@@ -17,8 +30,20 @@ class WorkflowState:
     judge_done: bool = False
     step: str = "start"
     judge_last_result: str = ""
+    failures: Annotated[List[str], operator.add] = field(default_factory=list)
+    retries: int = 0
+    max_retries: int = 2
+    last_agent: str = ""
+    call_logs: Annotated[List[str], operator.add] = field(default_factory=list)
 
-# Agent step stubs
+
+# Use the robust AgentCallManager
+manager = AgentCallManager(max_retries=2, backoff=0.5)
+manager.rag = RAGAgent()
+manager.assessor = AssessorAgent()
+manager.judge = LLMAsAJudgeAgent()
+
+# Agent step wrappers
 
 
 def supervisor(state: WorkflowState) -> WorkflowState:
@@ -26,7 +51,6 @@ def supervisor(state: WorkflowState) -> WorkflowState:
     state.log.append('Supervisor')
     # Decide which agent to call next
     if state.step == "from_judge":
-        # If last judge result was not reasonable and assessor_calls < 3, go to Assessor
         if state.judge_last_result == "not_reasonable" and state.assessor_calls < 3:
             state.step = "to_assessor"
         elif not state.judge_done:
@@ -47,6 +71,15 @@ def supervisor(state: WorkflowState) -> WorkflowState:
 def rag(state: WorkflowState) -> WorkflowState:
     print("RAG agent called.")
     state.log.append('RAG')
+    state.last_agent = 'RAG'
+    try:
+        result = manager.call_rag("What is Knowledge Representation and Reasoning?")
+        state.log.append(f'RAG result: {result}')
+        state.call_logs.append(str(manager.logs[-1]))
+    except Exception as e:
+        state.failures.append(f'RAG failed: {e}')
+        state.rag_done = True
+        return state
     state.rag_calls += 1
     if state.rag_calls >= 3:
         state.rag_done = True
@@ -56,6 +89,19 @@ def rag(state: WorkflowState) -> WorkflowState:
 def assessor(state: WorkflowState) -> WorkflowState:
     print("Assessor agent called.")
     state.log.append('Assessor')
+    state.last_agent = 'Assessor'
+    try:
+        result = manager.call_assessor(
+            "What is Knowledge Representation and Reasoning?",
+            "Knowledge Representation and Reasoning (KRR) is a field of AI focused on representing information about the world in a form that a computer system can utilize to solve complex tasks.",
+            "It is about how computers can store and use knowledge to solve problems."
+        )
+        state.log.append(f'Assessor result: {result}')
+        state.call_logs.append(str(manager.logs[-1]))
+    except Exception as e:
+        state.failures.append(f'Assessor failed: {e}')
+        state.assessor_done = True
+        return state
     state.assessor_calls += 1
     if state.assessor_calls >= 3:
         state.assessor_done = True
@@ -65,12 +111,27 @@ def assessor(state: WorkflowState) -> WorkflowState:
 def llmasajudge(state: WorkflowState) -> WorkflowState:
     print("LLMAsAJudge agent called.")
     state.log.append('LLMAsAJudge')
+    state.last_agent = 'LLMAsAJudge'
+    try:
+        result = manager.call_judge(
+            "What is Knowledge Representation and Reasoning?",
+            "Knowledge Representation and Reasoning (KRR) is a field of AI focused on representing information about the world in a form that a computer system can utilize to solve complex tasks.",
+            "It is about how computers can store and use knowledge to solve problems.",
+            8,
+            "Good explanation of the basic concept, but could be improved by mentioning that KRR involves not just storing knowledge but also reasoning with it to solve complex tasks."
+        )
+        state.log.append(f'Judge result: {result}')
+        state.call_logs.append(str(manager.logs[-1]))
+        if isinstance(result, dict) and result.get("reasonable") is not None:
+            if result["reasonable"]:
+                state.judge_last_result = "reasonable"
+            else:
+                state.judge_last_result = "not_reasonable"
+    except Exception as e:
+        state.failures.append(f'Judge failed: {e}')
+        state.judge_done = True
+        return state
     state.judge_calls += 1
-    # Simulate alternation: first call not reasonable, then reasonable, then not reasonable, etc.
-    if state.judge_calls % 2 == 1:
-        state.judge_last_result = "not_reasonable"
-    else:
-        state.judge_last_result = "reasonable"
     if state.judge_calls >= 3:
         state.judge_done = True
     return state
@@ -96,7 +157,6 @@ def assessor_conditional(state: WorkflowState) -> Literal['Supervisor', END]:
 
 
 def judge_conditional(state: WorkflowState) -> Literal['Supervisor', END]:
-    # After LLMAsAJudge, always go to Supervisor, but mark the step
     state.step = "from_judge"
     return 'Supervisor'
 
@@ -128,5 +188,8 @@ if __name__ == "__main__":
     state = WorkflowState()
     result = executable.invoke(state)
     print("Workflow log:", result["log"])
+    print(f"Failures: {result['failures']}")
+    print(f"Call logs: {result['call_logs']}")
     print(
         f"RAG calls: {result['rag_calls']}, Assessor calls: {result['assessor_calls']}, Judge calls: {result['judge_calls']}")
+    print(f"Retries on last call: {result['retries']}")
