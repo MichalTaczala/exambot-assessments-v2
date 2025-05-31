@@ -15,9 +15,10 @@ cd exambot-assessments-v2
 Create a `.env` file in the project root with:
 ```
 OPENAI_API_KEY=sk-...
-LANGSMITH_API_KEY=...
-LANGSMITH_PROJECT=...
-LANGSMITH_ENDPOINT=...
+LANGSMITH_API_KEY=...(optional)
+LANGSMITH_PROJECT=...(optional)
+LANGSMITH_ENDPOINT=...(optional)
+LANGSMITH_TRACING=...(optional)
 ```
 
 ---
