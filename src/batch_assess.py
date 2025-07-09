@@ -80,6 +80,7 @@ def main():
             result = {
                 'student_id': student_id,
                 'question_id': row.get('question_id', idx + 1),
+                'question': question,
                 'answer_id': row.get('answer_id', idx + 1),
                 'answer_text': answer,
                 'score': score,
