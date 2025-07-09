@@ -1,17 +1,12 @@
 import os
 from dotenv import load_dotenv
 from src.batch_assess import main as batch_assess
-from src.ingest import embed_knowledge_base
 
 
 def main():
     load_dotenv()
     required_keys = [
         'OPENAI_API_KEY',
-        'LANGSMITH_API_KEY',
-        'LANGSMITH_ENDPOINT',
-        'LANGSMITH_PROJECT',
-        'LANGSMITH_TRACING',
     ]
     missing = [k for k in required_keys if not os.getenv(k)]
     if missing:

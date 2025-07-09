@@ -6,7 +6,7 @@ from datetime import datetime
 CSV_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'output', 'results.csv')
 FIELDNAMES = [
     'student_id', 'question_id', 'answer_id', 'answer_text',
-    'score', 'feedback', 'assessor', 'judge', 'timestamp', 'agent_logs'
+    'score', 'feedback', 'timestamp', 'agent_logs'
 ]
 
 

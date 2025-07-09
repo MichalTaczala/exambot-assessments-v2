@@ -36,3 +36,15 @@ uv run main.py
 ```
 
 then, the output file with scores will be generated into data/output/results.csv
+
+
+
+NOTEBOOKA Z ODPALENIEM
+
+(SYNCHRONIZOWAC Z OUTPUTEM BARTKA)
+
+zmienić model llm-as-a-judge
+
+rubrix? opcje llm-as-a-judge
+
+opis metod sprawdzania odpowiedzi (literature przejrzeć)

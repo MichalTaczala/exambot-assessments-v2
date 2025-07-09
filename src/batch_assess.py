@@ -84,8 +84,6 @@ def main():
                 'answer_text': answer,
                 'score': score,
                 'feedback': feedback,
-                'assessor': 'AssessorAgent',
-                'judge': 'LLMAsAJudgeAgent',
                 'timestamp': datetime.now(timezone.utc).isoformat(),
                 'agent_logs': [
                     {'agent': 'RAG', 'event': 'retrieve', 'status': 'success',
